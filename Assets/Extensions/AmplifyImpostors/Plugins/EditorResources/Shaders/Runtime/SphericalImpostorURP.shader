@@ -702,6 +702,89 @@ Shader "Hidden/Amplify Impostors/Spherical Impostor URP"
 			}
 			ENDHLSL
 		}
+
+		Pass
+		{
+			Name "MotionVectors"
+			Tags { "LightMode" = "MotionVectors" }
+
+			ColorMask RG
+
+			HLSLPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
+
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/MotionVectorsCommon.hlsl"
+
+			#define AI_RENDERPIPELINE
+
+			#include "AmplifyImpostors.cginc"
+
+			struct VertexInput
+			{
+				float4 vertex : POSITION;
+				float3 normal : NORMAL;
+				float3 positionOld : TEXCOORD4;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct VertexOutput
+			{
+				float4 positionCS : SV_POSITION;
+				float4 positionCSNoJitter : TEXCOORD0;
+				float4 previousPositionCSNoJitter : TEXCOORD1;
+				float4 frameUVs  : TEXCOORD2;
+				float4 viewPos   : TEXCOORD3;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+				UNITY_VERTEX_OUTPUT_STEREO
+			};
+
+			VertexOutput vert( VertexInput v )
+			{
+				VertexOutput o = (VertexOutput)0;
+				UNITY_SETUP_INSTANCE_ID( v );
+				UNITY_TRANSFER_INSTANCE_ID( v, o );
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
+
+				SphereImpostorVertex( v.vertex, v.normal, o.frameUVs, o.viewPos );
+
+				o.positionCS = TransformObjectToHClip( v.vertex.xyz );
+				o.positionCSNoJitter = mul( _NonJitteredViewProjMatrix, mul( UNITY_MATRIX_M, v.vertex ) );
+				
+				float4 prevPos = ( unity_MotionVectorsParams.x == 1 ) ? float4( v.positionOld, 1 ) : v.vertex;
+				
+				o.previousPositionCSNoJitter = mul( _PrevViewProjMatrix, mul( UNITY_PREV_MATRIX_M, prevPos ) );
+				
+				ApplyMotionVectorZBias( o.positionCS );
+				return o;
+			}
+
+			half4 frag( VertexOutput IN, out float outDepth : SV_Depth ) : SV_TARGET
+			{
+				UNITY_SETUP_INSTANCE_ID( IN );
+				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+				SurfaceOutputStandardSpecular o = (SurfaceOutputStandardSpecular)0;
+				float4 clipPos = 0;
+				float3 worldPos = 0;
+
+				SphereImpostorFragment( o, clipPos, worldPos, IN.frameUVs, IN.viewPos );
+				IN.positionCS.zw = clipPos.zw;
+
+				#ifdef LOD_FADE_CROSSFADE
+					LODFadeCrossFade( IN.positionCS );
+				#endif
+
+				outDepth = clipPos.z;
+				return float4( CalcNdcMotionVectorFromCsPositions( IN.positionCSNoJitter, IN.previousPositionCSNoJitter ), 0, 0 );
+			}
+			ENDHLSL
+		}
 	}
 	FallBack "Hidden/InternalErrorShader"
 }

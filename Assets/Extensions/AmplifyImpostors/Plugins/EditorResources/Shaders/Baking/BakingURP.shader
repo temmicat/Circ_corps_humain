@@ -1,4 +1,4 @@
-// Made with Amplify Shader Editor v1.9.3.3
+// Made with Amplify Shader Editor v1.9.6.2
 // Available at the Unity Asset Store - http://u3d.as/y3X 
 Shader "Hidden/Baking URP"
 {
@@ -35,7 +35,7 @@ Shader "Hidden/Baking URP"
 			
 
             HLSLPROGRAM
-            #define ASE_SRP_VERSION 140009
+            #define ASE_SRP_VERSION 170003
 
             // Required to compile gles 2.0 with standard srp library
             #pragma prefer_hlslcc gles
@@ -233,7 +233,7 @@ Shader "Hidden/Baking URP"
 	Fallback Off
 }
 /*ASEBEGIN
-Version=19303
+Version=19602
 Node;AmplifyShaderEditor.FunctionNode;272;2160,-192;Inherit;False;Universal Surface Output;-1;;8;4220f49336ae49347952a65dcdfa5710;0;0;8;FLOAT3;0;FLOAT3;4;FLOAT3;5;FLOAT;6;FLOAT;7;FLOAT;8;FLOAT3;9;FLOAT;10
 Node;AmplifyShaderEditor.RangedFloatNode;241;2269.678,295.5062;Float;False;Global;_Cutoff;_Cutoff;0;0;Fetch;True;0;0;0;False;0;False;0.5;0;0;0;0;1;FLOAT;0
 Node;AmplifyShaderEditor.RangedFloatNode;238;2274.845,138.1202;Float;False;Constant;_Alpha1;Alpha1;2;0;Create;True;0;0;0;False;0;False;1;0;0;0;0;1;FLOAT;0
@@ -243,7 +243,7 @@ Node;AmplifyShaderEditor.FunctionNode;187;2599.477,-190.5401;Inherit;False;Pack 
 Node;AmplifyShaderEditor.DynamicAppendNode;256;2618.15,-71.96327;Inherit;False;FLOAT4;4;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;2;FLOAT;0;False;3;FLOAT;0;False;1;FLOAT4;0
 Node;AmplifyShaderEditor.DynamicAppendNode;240;2629.412,-303.1327;Inherit;False;FLOAT4;4;0;FLOAT3;0,0,0;False;1;FLOAT;0;False;2;FLOAT;0;False;3;FLOAT;0;False;1;FLOAT4;0
 Node;AmplifyShaderEditor.StaticSwitch;244;2724.947,165.0664;Float;False;Property;_Keyword4;Keyword 4;7;0;Fetch;False;0;0;0;False;0;False;0;0;0;False;_ALPHATEST_ON;Toggle;2;Key0;Key1;Fetch;False;True;All;9;1;FLOAT;0;False;0;FLOAT;0;False;2;FLOAT;0;False;3;FLOAT;0;False;4;FLOAT;0;False;5;FLOAT;0;False;6;FLOAT;0;False;7;FLOAT;0;False;8;FLOAT;0;False;1;FLOAT;0
-Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;271;3048.978,-256.7144;Float;False;True;-1;2;ASEMaterialInspector;0;26;Hidden/Baking URP;6ee191abcace33c46a5dd52068b074e0;True;Base;0;0;Base;10;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;2;False;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;255;False;;255;False;;255;False;;7;False;;1;False;;1;False;;1;False;;7;False;;1;False;;1;False;;1;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;True;12;all;0;;0;0;Standard;1;Receive Shadows;1;0;0;1;True;False;;False;0
+Node;AmplifyShaderEditor.TemplateMultiPassMasterNode;271;3048.978,-256.7144;Float;False;True;-1;2;ASEMaterialInspector;0;16;Hidden/Baking URP;6ee191abcace33c46a5dd52068b074e0;True;Base;0;0;Base;10;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;3;RenderPipeline=UniversalPipeline;RenderType=Opaque=RenderType;Queue=Geometry=Queue=0;True;2;False;0;False;True;1;1;False;;0;False;;0;1;False;;0;False;;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;True;True;True;True;0;False;;False;False;False;False;False;False;False;True;False;255;False;;255;False;;255;False;;7;False;;1;False;;1;False;;1;False;;7;False;;1;False;;1;False;;1;False;;False;True;1;False;;True;3;False;;True;True;0;False;;0;False;;True;1;LightMode=UniversalForward;False;True;12;all;0;;0;0;Standard;1;Receive Shadows;1;0;0;1;True;False;;False;0
 WireConnection;243;0;272;10
 WireConnection;243;1;241;0
 WireConnection;257;0;272;9
@@ -261,4 +261,4 @@ WireConnection;271;2;187;0
 WireConnection;271;3;257;0
 WireConnection;271;8;244;0
 ASEEND*/
-//CHKSM=11AE5416A373D152E8E821813D741AA5C1E6E6C6
+//CHKSM=8F1880E8E8562E0F4CDA0D43A6D86F8DE58FE5A4
