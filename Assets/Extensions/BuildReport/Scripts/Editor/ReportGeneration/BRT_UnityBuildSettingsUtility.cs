@@ -44,6 +44,7 @@ using UnityEngine;
 
 namespace BuildReportTool
 {
+	[Obsolete]
 	public static class UnityBuildSettingsUtility
 	{
 		// ================================================================================================
