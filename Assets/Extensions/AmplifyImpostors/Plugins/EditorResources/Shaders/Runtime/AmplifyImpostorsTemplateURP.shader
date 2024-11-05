@@ -3,6 +3,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
     Properties
     {
 		/*ase_props*/
+
 		//_TransmissionShadow( "Transmission Shadow", Range( 0, 1 ) ) = 1.0
 		//_TransStrength( "Trans Strength", Range( 0, 16 ) ) = 2
 		//_TransNormal( "Trans Normal Distortion", Range( 0, 1 ) ) = 0.0
@@ -25,6 +26,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			Option:Receive Shadows:false,true:true
 				true:RemoveDefine:_RECEIVE_SHADOWS_OFF 1
 				false:SetDefine:_RECEIVE_SHADOWS_OFF 1
+			Option:Motion Vectors:false,true:true
+				true:IncludePass:MotionVectors
+				false:ExcludePass:MotionVectors
 			Port:Base:Alpha Clip Threshold
 				On:SetDefine:_ALPHATEST_ON 1
 			Option:Transmission:false,true:false
@@ -97,22 +101,26 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				true:SetDefine:ShadowCaster:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				true:SetDefine:DepthOnly:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				true:SetDefine:DepthNormals:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+				true:SetDefine:MotionVectors:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				false:RemoveDefine:Base:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				false:RemoveDefine:GBuffer:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				false:RemoveDefine:ShadowCaster:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				false:RemoveDefine:DepthOnly:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 				false:RemoveDefine:DepthNormals:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
+				false:RemoveDefine:MotionVectors:pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
 			Option:DOTS Instancing:false,true:false
 				true:SetDefine:Base:pragma multi_compile _ DOTS_INSTANCING_ON
 				true:SetDefine:GBuffer:pragma multi_compile _ DOTS_INSTANCING_ON
 				true:SetDefine:ShadowCaster:pragma multi_compile _ DOTS_INSTANCING_ON
 				true:SetDefine:DepthOnly:pragma multi_compile _ DOTS_INSTANCING_ON
 				true:SetDefine:DepthNormals:pragma multi_compile _ DOTS_INSTANCING_ON
+				true:SetDefine:MotionVectors:pragma multi_compile _ DOTS_INSTANCING_ON
 				false:RemoveDefine:Base:pragma multi_compile _ DOTS_INSTANCING_ON
 				false:RemoveDefine:GBuffer:pragma multi_compile _ DOTS_INSTANCING_ON
 				false:RemoveDefine:ShadowCaster:pragma multi_compile _ DOTS_INSTANCING_ON
 				false:RemoveDefine:DepthOnly:pragma multi_compile _ DOTS_INSTANCING_ON
 				false:RemoveDefine:DepthNormals:pragma multi_compile _ DOTS_INSTANCING_ON
+				false:RemoveDefine:MotionVectors:pragma multi_compile _ DOTS_INSTANCING_ON
 		*/
         Tags
 		{
@@ -185,8 +193,8 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			//#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 			//#pragma multi_compile _ LIGHTMAP_ON
 			//#pragma multi_compile _ DYNAMICLIGHTMAP_ON
+			//#pragma multi_compile _ USE_LEGACY_LIGHTMAPS
 			//#pragma multi_compile_fragment _ DEBUG_DISPLAY
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
 
 			#pragma vertex vert
 			#pragma fragment frag
@@ -198,6 +206,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DBuffer.hlsl"
@@ -225,6 +236,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
                 float4 positionCS                : SV_POSITION;
                 float4 lightmapUVOrVertexSH	  : TEXCOORD0;
         		half4 fogFactorAndVertexLight : TEXCOORD1;
+				#if defined(USE_APV_PROBE_OCCLUSION)
+					float4 probeOcclusion : TEXCOORD2;
+				#endif
 				/*ase_interp(3,):sp=sp.xyzw;*/
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             	UNITY_VERTEX_OUTPUT_STEREO
@@ -259,7 +273,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				v.positionOS.xyz += /*ase_vert_out:Vertex Offset;Float3;8;-1;_Vertex*/ float3( 0, 0, 0 ) /*end*/;
 
         		// Vertex shader outputs defined by graph
-                float3 lwWNormal = TransformObjectToWorldNormal(v.normalOS );
+                float3 normalWS = TransformObjectToWorldNormal(v.normalOS );
 
                 VertexPositionInputs vertexInput = GetVertexPositionInputs(v.positionOS.xyz);
 
@@ -268,9 +282,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
                 // see DECLARE_LIGHTMAP_OR_SH macro.
         	    // The following funcions initialize the correct variable with correct data
         	    OUTPUT_LIGHTMAP_UV(v.texcoord1, unity_LightmapST, o.lightmapUVOrVertexSH.xy);
-        	    OUTPUT_SH(lwWNormal, o.lightmapUVOrVertexSH.xyz);
+				OUTPUT_SH4(vertexInput.positionWS, normalWS, GetWorldSpaceNormalizeViewDir( vertexInput.positionWS ), o.lightmapUVOrVertexSH.xyz, o.probeOcclusion);
 
-        	    half3 vertexLight = VertexLighting(vertexInput.positionWS, lwWNormal);
+        	    half3 vertexLight = VertexLighting(vertexInput.positionWS, normalWS);
         	    half fogFactor = ComputeFogFactor(vertexInput.positionCS.z);
         	    o.fogFactorAndVertexLight = half4(fogFactor, vertexLight);
         	    o.positionCS = vertexInput.positionCS;
@@ -283,7 +297,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 						#ifdef _WRITE_RENDERING_LAYERS
 						, out float4 outRenderingLayers : SV_Target1
 						#endif
-						/*ase_frag_input*/) : SV_Target			
+						/*ase_frag_input*/) : SV_Target
 			{
             	UNITY_SETUP_INSTANCE_ID(IN);
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
@@ -335,7 +349,16 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 					half4 decodeInstructions = half4( LIGHTMAP_HDR_MULTIPLIER, LIGHTMAP_HDR_EXPONENT, 0.0h, 0.0h );
 					inputData.bakedGI = UnpackLightmapRGBM( BakedGI, decodeInstructions ) * EMISSIVE_RGBM_SCALE;
 				#else
-					inputData.bakedGI = SAMPLE_GI(IN.lightmapUVOrVertexSH.xy, IN.lightmapUVOrVertexSH.xyz, inputData.normalWS);
+					#if !defined(LIGHTMAP_ON) && (defined(PROBE_VOLUMES_L1) || defined(PROBE_VOLUMES_L2))
+						inputData.bakedGI = SAMPLE_GI( IN.lightmapUVOrVertexSH.xyz, GetAbsolutePositionWS( inputData.positionWS ),
+							inputData.normalWS,
+							inputData.viewDirectionWS,
+							IN.positionCS.xy,
+							IN.probeOcclusion,
+							inputData.shadowMask );
+					#else
+						inputData.bakedGI = SAMPLE_GI(IN.lightmapUVOrVertexSH.xy, IN.lightmapUVOrVertexSH.xyz, inputData.normalWS);
+					#endif
 				#endif
 
 				SurfaceData surfaceData;
@@ -372,7 +395,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 						uint meshRenderingLayers = GetMeshRenderingLayer();
 						uint pixelLightCount = GetAdditionalLightsCount();
 						#if USE_FORWARD_PLUS
-						for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+						[loop] for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
 						{
 							FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
 
@@ -421,7 +444,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 						uint meshRenderingLayers = GetMeshRenderingLayer();
 						uint pixelLightCount = GetAdditionalLightsCount();
 						#if USE_FORWARD_PLUS
-							for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+							[loop] for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
 							{
 								FORWARD_PLUS_SUBTRACTIVE_LIGHT_CHECK
 
@@ -494,6 +517,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -570,9 +596,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
 
 				#if UNITY_REVERSED_Z
-				positionCS.z = min(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+					positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
 				#else
-				positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+					positionCS.z = max(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
 				#endif
 
 				// no need for shadow bias alteration since we do it in fragment anyway
@@ -636,6 +662,8 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -759,6 +787,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -869,6 +900,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/MetaInput.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
@@ -890,10 +924,10 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
         	{
         	    float4 positionCS      : SV_POSITION;
 				#ifdef EDITOR_VISUALIZATION
-				float4 VizUV : TEXCOORD2;
-				float4 LightCoord : TEXCOORD3;
+				float4 VizUV : TEXCOORD0;
+				float4 LightCoord : TEXCOORD1;
 				#endif
-                /*ase_interp(0,):sp=sp.xyzw;uv1=tc1*/
+                /*ase_interp(2,):sp=sp.xyzw;uv1=tc1*/
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
         	};
@@ -939,7 +973,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				#ifdef EDITOR_VISUALIZATION
 					float2 VizUV = 0;
 					float4 LightCoord = 0;
-					UnityEditorVizData(v.positionOS.xyz, v.texcoord0.xy, v.texcoord1.xy, v.texcoord2.xy, VizUV, LightCoord);
+					UnityEditorVizData(v.positionOS.xyz, v.texcoord.xy, v.texcoord1.xy, v.texcoord2.xy, VizUV, LightCoord);
 					o.VizUV = float4(VizUV, 0, 0);
 					o.LightCoord = LightCoord;
 				#endif
@@ -997,14 +1031,20 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 
 			#pragma multi_compile_instancing
 
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
-
 			#define SHADERPASS SHADERPASS_DEPTHNORMALSONLY
 
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Texture.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
-			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
 			#if defined(LOD_FADE_CROSSFADE)
@@ -1158,8 +1198,8 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			//#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 			//#pragma multi_compile _ LIGHTMAP_ON
 			//#pragma multi_compile _ DYNAMICLIGHTMAP_ON
+			//#pragma multi_compile _ USE_LEGACY_LIGHTMAPS
 			#pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
-			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
 
 			#define SHADERPASS SHADERPASS_GBUFFER
 
@@ -1167,6 +1207,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityGBuffer.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
@@ -1193,6 +1236,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				float4 positionCS                : SV_POSITION;
 				float4 lightmapUVOrVertexSH	  : TEXCOORD0;
 				half4 fogFactorAndVertexLight : TEXCOORD1;
+				#if defined(USE_APV_PROBE_OCCLUSION)
+					float4 probeOcclusion : TEXCOORD2;
+				#endif
 				/*ase_interp(3,):sp=sp.xyzw;*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
@@ -1227,7 +1273,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				v.positionOS.xyz += /*ase_vert_out:Vertex Offset;Float3;8;-1;_Vertex*/ float3(0, 0, 0) /*end*/;
 
 				// Vertex shader outputs defined by graph
-				float3 lwWNormal = TransformObjectToWorldNormal(v.normalOS);
+				float3 normalWS = TransformObjectToWorldNormal(v.normalOS);
 
 				VertexPositionInputs vertexInput = GetVertexPositionInputs(v.positionOS.xyz);
 
@@ -1236,9 +1282,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				// see DECLARE_LIGHTMAP_OR_SH macro.
 				// The following funcions initialize the correct variable with correct data
 				OUTPUT_LIGHTMAP_UV(v.texcoord1, unity_LightmapST, o.lightmapUVOrVertexSH.xy);
-				OUTPUT_SH(lwWNormal, o.lightmapUVOrVertexSH.xyz);
+				OUTPUT_SH4(vertexInput.positionWS, normalWS, GetWorldSpaceNormalizeViewDir( vertexInput.positionWS ), o.lightmapUVOrVertexSH.xyz, o.probeOcclusion);
 
-				half3 vertexLight = VertexLighting(vertexInput.positionWS, lwWNormal);
+				half3 vertexLight = VertexLighting(vertexInput.positionWS, normalWS);
 
 				o.fogFactorAndVertexLight = half4(0, vertexLight);
 				o.positionCS = vertexInput.positionCS;
@@ -1301,7 +1347,16 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 					half4 decodeInstructions = half4(LIGHTMAP_HDR_MULTIPLIER, LIGHTMAP_HDR_EXPONENT, 0.0h, 0.0h);
 					inputData.bakedGI = UnpackLightmapRGBM(BakedGI, decodeInstructions) * EMISSIVE_RGBM_SCALE;
 				#else
-					inputData.bakedGI = SAMPLE_GI(IN.lightmapUVOrVertexSH.xy, IN.lightmapUVOrVertexSH.xyz, inputData.normalWS);
+					#if !defined(LIGHTMAP_ON) && (defined(PROBE_VOLUMES_L1) || defined(PROBE_VOLUMES_L2))
+						inputData.bakedGI = SAMPLE_GI( IN.lightmapUVOrVertexSH.xyz, GetAbsolutePositionWS( inputData.positionWS ),
+							inputData.normalWS,
+							inputData.viewDirectionWS,
+							IN.positionCS.xy,
+							IN.probeOcclusion,
+							inputData.shadowMask );
+					#else
+						inputData.bakedGI = SAMPLE_GI(IN.lightmapUVOrVertexSH.xy, IN.lightmapUVOrVertexSH.xyz, inputData.normalWS);
+					#endif
 				#endif
 
 				#ifdef _DBUFFER
@@ -1364,6 +1419,9 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl"
+			#include_with_pragmas "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRenderingKeywords.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/FoveatedRendering.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/DebugMipmapStreamingMacros.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/ShaderGraphFunctions.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/Editor/ShaderGraph/Includes/ShaderPass.hlsl"
 
@@ -1391,7 +1449,7 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 					float4 VizUV : TEXCOORD2;
 					float4 LightCoord : TEXCOORD3;
 				#endif
-				/*ase_interp(2,):sp=sp;wp=tc0;sc=tc1*/
+				/*ase_interp(4,):sp=sp;wp=tc0;sc=tc1*/
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
@@ -1458,6 +1516,123 @@ Shader /*ase_name*/ "Hidden/Impostors/Lit URP" /*end*/
 				outColor = _SelectionID;
 
 				return outColor;
+			}
+			ENDHLSL
+		}
+
+		/*ase_pass*/
+		Pass
+		{
+			/*ase_hide_pass*/
+			Name "MotionVectors"
+			Tags
+			{
+				"LightMode" = "MotionVectors"
+			}
+
+			ColorMask RG
+
+			HLSLPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+			#if defined(LOD_FADE_CROSSFADE)
+				#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/LODCrossFade.hlsl"
+			#endif
+
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/MotionVectorsCommon.hlsl"
+
+			/*ase_pragma*/
+
+			struct VertexInput
+			{
+				float4 positionOS : POSITION;
+				float3 normalOS : NORMAL;
+				float3 positionOld : TEXCOORD4;
+				/*ase_vdata:p=p;n=n;uv4=tc4*/
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct VertexOutput
+			{
+				float4 positionCS : SV_POSITION;
+				float4 positionCSNoJitter : TEXCOORD0;
+				float4 previousPositionCSNoJitter : TEXCOORD1;
+				/*ase_interp(2,):sp=sp.xyzw*/
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+				UNITY_VERTEX_OUTPUT_STEREO
+			};
+
+			CBUFFER_START(UnityPerMaterial)
+			#ifdef ASE_TRANSMISSION
+				float _TransmissionShadow;
+			#endif
+			#ifdef ASE_TRANSLUCENCY
+				float _TransStrength;
+				float _TransNormal;
+				float _TransScattering;
+				float _TransDirect;
+				float _TransAmbient;
+				float _TransShadow;
+			#endif
+			CBUFFER_END
+
+			/*ase_globals*/
+
+			/*ase_funcs*/
+
+			VertexOutput vert( VertexInput v /*ase_vert_input*/ )
+			{
+				VertexOutput o = (VertexOutput)0;
+				UNITY_SETUP_INSTANCE_ID( v );
+				UNITY_TRANSFER_INSTANCE_ID( v, o );
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO( o );
+
+				/*ase_vert_code:v=VertexInput;o=VertexOutput*/
+
+				v.positionOS.xyz += /*ase_vert_out:Vertex Offset;Float3;8;-1;_Vertex*/ float3( 0, 0, 0 ) /*end*/;
+
+				o.positionCS = TransformObjectToHClip( v.positionOS.xyz );
+				o.positionCSNoJitter = mul( _NonJitteredViewProjMatrix, mul( UNITY_MATRIX_M, v.positionOS ) );
+				
+				float4 prevPos = ( unity_MotionVectorsParams.x == 1 ) ? float4( v.positionOld, 1 ) : v.positionOS;
+				
+				o.previousPositionCSNoJitter = mul( _PrevViewProjMatrix, mul( UNITY_PREV_MATRIX_M, prevPos ) );
+				
+				ApplyMotionVectorZBias( o.positionCS );
+				return o;
+			}
+
+			half4 frag( VertexOutput IN, out float outDepth : SV_Depth /*ase_frag_input*/ ) : SV_TARGET
+			{
+				UNITY_SETUP_INSTANCE_ID( IN );
+				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
+				SurfaceOutput o = ( SurfaceOutput )0;
+
+				//Calculated by AI
+				float4 positionCS = 0;
+				float3 positionWS = 0;
+
+				/*ase_frag_code:IN=VertexOutput*/
+
+				float Alpha = /*ase_frag_out:Alpha;Float;6;-1;_Alpha*/1/*end*/;
+				float AlphaClipThreshold = /*ase_frag_out:Alpha Clip Threshold;Float;7;-1;_AlphaClip*/0.5/*end*/;
+	
+				IN.positionCS.zw = positionCS.zw;
+
+				#ifdef LOD_FADE_CROSSFADE
+					LODFadeCrossFade( IN.positionCS );
+				#endif
+
+				#if _ALPHATEST_ON
+					clip(Alpha - AlphaClipThreshold);
+				#endif
+
+				outDepth = positionCS.z;
+				return float4( CalcNdcMotionVectorFromCsPositions( IN.positionCSNoJitter, IN.previousPositionCSNoJitter ), 0, 0 );
 			}
 			ENDHLSL
 		}
