@@ -44,7 +44,6 @@ using UnityEngine;
 
 namespace BuildReportTool
 {
-	[Obsolete]
 	public static class UnityBuildSettingsUtility
 	{
 		// ================================================================================================
@@ -661,7 +660,7 @@ namespace BuildReportTool
 
 			settings.AndroidBuildSubtarget = EditorUserBuildSettings.androidBuildSubtarget.ToString();
 
-			settings.AndroidUseAPKExpansionFiles = PlayerSettings.Android.useAPKExpansionFiles;
+			settings.AndroidUseAPKExpansionFiles = PlayerSettings.Android.splitApplicationBinary;
 
 #if !UNITY_4
 			settings.AndroidAsAndroidProject = EditorUserBuildSettings.exportAsGoogleAndroidProject;
@@ -912,7 +911,8 @@ namespace BuildReportTool
 #endif
 		}
 
-		public static void PopulateBigConsoleGen08Settings(UnityBuildSettings settings)
+				[Obsolete("Obsolete")]
+				public static void PopulateBigConsoleGen08Settings(UnityBuildSettings settings)
 		{
 #if !UNITY_4
 			// Xbox One build settings
