@@ -1,7 +1,10 @@
 {
-    "name": "NomDuJeu.Core",
-    "rootNamespace": "NomDuJeu.Core",
-    "references": [],
+    "name": "CorpsHumain.Core",
+    "rootNamespace": "CorpsHumain.Core",
+    "references": [
+        "GUID:23a00f2c176f4b14ba20940e7aaabbd4",
+        "GUID:698d9fb1ec18b274d9c4a1278120e118"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
