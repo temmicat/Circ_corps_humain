@@ -57,6 +57,8 @@ namespace LucidFactory.Cards.UI
             CurrentCardCollection = cardCollection;
             CurrentCardCollection.OnCardAdded += InternalOnCardAdded;
             CurrentCardCollection.OnCardRemoved += InternalOnCardRemoved;
+
+
             OnBind(cardCollection);
             foreach (var card in cardCollection.Cards)
                 OnCardAdded(card);

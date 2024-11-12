@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace LucidFactory.Cards.UI.Hand
 {
-    [RequireComponent(typeof(LayoutElement)), RequireComponent(typeof(RequireComponent)), RequireComponent(typeof(CanvasGroup))]
+    [RequireComponent(typeof(LayoutElement)), RequireComponent(typeof(RectTransform)), RequireComponent(typeof(CanvasGroup))]
     public class CardContainer : MonoBehaviour
     {
         private event Action<RectTransform> OnRectChanged;
@@ -16,16 +16,10 @@ namespace LucidFactory.Cards.UI.Hand
         protected ICardUI CardUI { get; private set; }
         protected RectTransform RectTransform { get; private set; }
 
-        [ShowInInspector]
         public Vector3 Position => RectTransform.position;
-
-        [ShowInInspector]
         public Vector3 AnchoredPosition3D => RectTransform.anchoredPosition3D;
 
-        [ShowInInspector]
         public Vector2 AnchoredPosition => RectTransform.anchoredPosition;
-
-        [ShowInInspector]
         public Quaternion Rotation => RectTransform.rotation;
 
         private int refCount = 0;

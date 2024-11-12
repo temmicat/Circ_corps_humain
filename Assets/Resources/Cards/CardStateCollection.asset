@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad4432c5cad40a2a78f0bcd8c92a0d6, type: 3}
+  m_Name: CardStateCollection
+  m_EditorClassIdentifier: 
+  <IdleState>k__BackingField: {fileID: 11400000, guid: f1ff2e2a365d67a448e03e27e0187f72, type: 2}
+  <DraggedState>k__BackingField: {fileID: 11400000, guid: 668e218bfda268b498da040d6103db96, type: 2}
+  <DraggedCanceledState>k__BackingField: {fileID: 11400000, guid: 70fa03e0cae62b749bd75254a56568af, type: 2}
+  <DraggedSuccessState>k__BackingField: {fileID: 11400000, guid: 746b78a5a7d0c41488ab5e81a65ec646, type: 2}
+  <SelectedState>k__BackingField: {fileID: 11400000, guid: 059e70c8960545648bbb17dd2baaa10f, type: 2}
+  <HoveredState>k__BackingField: {fileID: 11400000, guid: b65c33d489841e944acb3450688d146d, type: 2}
