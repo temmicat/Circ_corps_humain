@@ -7,6 +7,9 @@ namespace CorpsHumain.Core
 {
     public class DefenceCardUI : CardUI<DefenceCard>
     {
+
+        // This script handles the conversion between datas in DefenceCardData and the UI
+
         [SerializeField]
         private TextMeshProUGUI title;
         [SerializeField]

@@ -5,9 +5,12 @@ namespace CorpsHumain.Core
     [DefaultExecutionOrder(-100)]
     public class Player : MonoBehaviour
     {
+
+        // This Script Creates the DefenceCardHand, based on the Cards located under Resources -> Cards
+
         public DefenceCardHand cardHand;
 
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
+
         void Awake()
         {
             Debug.Log("Player");

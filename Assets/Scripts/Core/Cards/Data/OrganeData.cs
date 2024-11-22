@@ -6,5 +6,8 @@ namespace CorpsHumain.Core
     public class OrganeData : ScriptableObject
     {
     
+        // This is the base Scriptable Object Containing each var for each organ
+
+
     }
 }

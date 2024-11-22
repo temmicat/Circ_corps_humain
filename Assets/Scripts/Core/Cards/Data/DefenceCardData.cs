@@ -8,12 +8,16 @@ namespace CorpsHumain.Core
 
         // This is the base Scriptable Object containing each var for each cards
         // Cards are created based on this Scriptable Object, on Ressource -> Cards
+
+        // DefenceCardUI takes these informations and convert them to be seen on UI
+
         [SerializeField] 
         private string title;
         [SerializeField]
         private string description;
         [SerializeField]
         private Sprite icon;
+
         [SerializeField]
         private OrganeData organe;
 
