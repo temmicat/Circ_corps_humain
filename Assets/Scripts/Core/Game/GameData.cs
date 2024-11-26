@@ -21,7 +21,7 @@ namespace CorpsHumain.Core
         public List<levels> levelsCleared;
 
         // list organ : answers
-        public List<levels> Answers;
+        public List<levels> playerAnswers;
 
     }
 }

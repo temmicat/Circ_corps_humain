@@ -17,15 +17,22 @@ namespace CorpsHumain.Core
         private string description;
         [SerializeField]
         private Sprite icon;
+        
+        public enum cards
+        {
+            Depistage, Soleil, GazRadon,
+            AlimentationSaine, Vaccination,
+            Consignes, Fumer, TabagismePassif,
+            Poids, ActifPhysiquement, Allaiter,
+            Alcool
+        }
 
-        [SerializeField]
-        private OrganeData organe;
+        public cards thisCard;
 
 
         public string Title => title;
         public string Description => description;
         public Sprite Icon => icon;
-        public OrganeData Organe => organe;
 
     }
 }

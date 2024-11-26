@@ -8,6 +8,7 @@ namespace CorpsHumain.Core
         public GameObject clearConfirmButton;
         public GameObject quitConfirmButton;
         public GameObject levelConfirmButton;
+        public GameObject validateResultsButton;
 
         public GameObject settingsPanel;
         public GameObject selectionPanel;
@@ -99,7 +100,13 @@ namespace CorpsHumain.Core
         #region GamePanel
         public void ValidateResultsButton()
         {
-            
+            gameDataScriptable.levelsCleared.Add(gameDataScriptable.levelActive);
+            validateResultsButton.SetActive(false);
+        }
+
+        public void BackButton()
+        {
+            SceneManager.LoadScene(0);
         }
         #endregion GamePanel
     }

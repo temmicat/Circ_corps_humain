@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 532b63923e128ab4e96a818782a53a16, type: 3}
-  m_Name: GameData
+  m_Script: {fileID: 11500000, guid: a84d1b7ac0027cb46bd2da1c8b6e29e2, type: 3}
+  m_Name: ColonRectum
   m_EditorClassIdentifier: 
-  levelActive: 8
-  levelsCleared: 
-  playerAnswers: 
+  thisOrgane: 8
+  thisOrganAnswers: 
+  numberOfAnswers: 0
+  icon: {fileID: 21300000, guid: 6e54eaa482ea20d4fbe2b232ac925827, type: 3}

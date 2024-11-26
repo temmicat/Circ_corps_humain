@@ -18,6 +18,7 @@ namespace CorpsHumain.Core
             cardHand = new DefenceCardHand(12);
 
             DefenceCardData[] data = Resources.LoadAll<DefenceCardData>("Cards");
+            // Instantiate Organe where thisOrgane == GameData.levelActive
 
             for (int i = 0; i < data.Length; i++)
             {
