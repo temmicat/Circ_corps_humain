@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Vessie
   m_EditorClassIdentifier: 
   thisOrgane: 9
-  thisOrganAnswers: 
-  numberOfAnswers: 0
+  thisOrganAnswers: 0500000005000000
+  numberOfAnswers: 2
   icon: {fileID: -7053939661997144990, guid: 4dffe6eab57ca4e4ba2f967307bd1c29, type: 3}

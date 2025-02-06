@@ -9,7 +9,8 @@ namespace CorpsHumain.Core
 
         // This is the base Scriptable Object Containing each var for each organ
         public GameData.levels thisOrgane;
-        public List<DefenceCardData.cards> thisOrganAnswers;
+        public List<CardType> thisOrganAnswers;
+
         public int numberOfAnswers;
 
         [SerializeField]

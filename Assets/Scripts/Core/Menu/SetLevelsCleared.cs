@@ -22,14 +22,26 @@ namespace CorpsHumain.Core
         public GameObject seinButton;
         public GameObject vessieButton;
 
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+        public void SetButtonsActive()
         {
-                CheckValues();
+            colDeLUterusButton.SetActive(true);
+            colonRectumButton.SetActive(true);
+            endometreButton.SetActive(true);
+            estomacButton.SetActive(true);
+            foieButton.SetActive(true);
+            oesophageButton.SetActive(true);
+            ovairesButton.SetActive(true);
+            pancreasButton.SetActive(true);
+            peauButton.SetActive(true);
+            poumonsButton.SetActive(true);
+            reinButton.SetActive(true);
+            seinButton.SetActive(true);
+            vessieButton.SetActive(true);
         }
 
-        private void CheckValues()
+        public void CheckValues()
         {
+            Debug.Log("checking");
             if(gameDataScriptable.levelsCleared.Contains(GameData.levels.ColDeLUterus))
             {
                 colDeLUterusButton.SetActive(false);

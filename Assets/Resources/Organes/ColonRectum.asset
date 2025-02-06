@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ColonRectum
   m_EditorClassIdentifier: 
   thisOrgane: 8
-  thisOrganAnswers: 
-  numberOfAnswers: 0
+  thisOrganAnswers: 0b00000009000000030000000300000003000000
+  numberOfAnswers: 5
   icon: {fileID: 21300000, guid: 6e54eaa482ea20d4fbe2b232ac925827, type: 3}

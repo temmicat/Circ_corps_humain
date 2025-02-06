@@ -2,7 +2,7 @@
   "dependencies": {
     "com.ltx.channeled-properties": "1.0.0",
     "com.ltx.singletons": "1.0.1",
-    "com.ltx.tools": "1.0.1",
+    "com.ltx.tools": "1.0.2",
     "com.unity.collab-proxy": "2.5.2",
     "com.unity.device-simulator.devices": "1.0.0",
     "com.unity.ide.visualstudio": "2.0.22",

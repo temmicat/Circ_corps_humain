@@ -330,7 +330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5566038, g: 0.5539783, b: 0.5539783, a: 0.45490196}
+  m_Color: {r: 0.5529412, g: 0.5568628, b: 0.5531357, a: 0.45490196}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -420,11 +420,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45caf5b2542126c4ba2cf12b52e91e83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <LastState>k__BackingField: {fileID: 0}
-  <CurrentState>k__BackingField: {fileID: 0}
   title: {fileID: 4250994256422581470}
   description: {fileID: 8233070687989271076}
   icon: {fileID: 2790074675998507401}
+  gameDataScriptable: {fileID: 11400000, guid: 90fa4910671ddd64999cf7c13e23ddb2, type: 2}
 --- !u!1 &7171618492974687320
 GameObject:
   m_ObjectHideFlags: 0

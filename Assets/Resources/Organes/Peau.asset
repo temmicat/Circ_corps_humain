@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Peau
   m_EditorClassIdentifier: 
   thisOrgane: 0
-  thisOrganAnswers: 0000000001000000
-  numberOfAnswers: 2
+  thisOrganAnswers: 01000000
+  numberOfAnswers: 1
   icon: {fileID: 21300000, guid: e55e4ef66043a8747866894761ac06be, type: 3}

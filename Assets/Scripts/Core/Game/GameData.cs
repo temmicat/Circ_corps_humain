@@ -21,7 +21,26 @@ namespace CorpsHumain.Core
         public List<levels> levelsCleared;
 
         // list organ : answers
-        public List<levels> playerAnswers;
+        public List<CardType> playerAnswers;
 
+        public int answersNumber;
+
+        // Game answers
+        public Dictionary<levels, List<GameObject>> gameAnswers = new Dictionary<levels, List<GameObject>>()
+        {
+            {levels.Rein, new List<GameObject>()},
+            {levels.Ovaires, new List<GameObject>() },
+            {levels.Sein, new List<GameObject>() },
+            {levels.Pancreas, new List<GameObject>() },
+            {levels.Peau, new List<GameObject>() },
+            {levels.ColDeLUterus, new List<GameObject>() },
+            {levels.ColonRectum, new List<GameObject>() },
+            {levels.Endometre, new List<GameObject>() },
+            {levels.Estomac, new List<GameObject>() },
+            {levels.Foie, new List<GameObject>() },
+            {levels.Oesophage, new List<GameObject>() },
+            {levels.Poumon, new List<GameObject>() },
+            {levels.Vessie, new List<GameObject>() },
+        };
     }
 }

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ColDeLUterus
   m_EditorClassIdentifier: 
   thisOrgane: 11
-  thisOrganAnswers: 
-  numberOfAnswers: 0
+  thisOrganAnswers: 0400000004000000
+  numberOfAnswers: 2
   icon: {fileID: 21300002, guid: 66995b6b61aed864daa956ae255d7fee, type: 3}

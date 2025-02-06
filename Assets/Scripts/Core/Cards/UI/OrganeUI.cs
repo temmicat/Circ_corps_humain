@@ -5,12 +5,15 @@ using UnityEngine.UI;
 
 namespace CorpsHumain.Core
 {
+    //TODO deposer carte dessus et transvaser la carte de la main du jouer a la main des organes
+
+
     public class OrganeUI : MonoBehaviour
     {
         // This script handles the conversion between datas in OrganeData and the UI
 
         public List<OrganeData> organesList;
-        private OrganeData organeDataScriptable;
+        public OrganeData organeDataScriptable { get; private set; }
         public GameData gameDataScriptable;
 
         [SerializeField]
@@ -20,6 +23,7 @@ namespace CorpsHumain.Core
         {
             SelectOrgan();
             ApplyData();
+            gameDataScriptable.answersNumber = organeDataScriptable.numberOfAnswers;
         }
 
         public void SelectOrgan()

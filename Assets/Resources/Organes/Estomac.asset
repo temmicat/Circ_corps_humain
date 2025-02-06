@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Estomac
   m_EditorClassIdentifier: 
   thisOrgane: 4
-  thisOrganAnswers: 
-  numberOfAnswers: 0
+  thisOrganAnswers: 030000000300000003000000
+  numberOfAnswers: 3
   icon: {fileID: 21300000, guid: 395800a7c7a30f448b61fb690556100f, type: 3}

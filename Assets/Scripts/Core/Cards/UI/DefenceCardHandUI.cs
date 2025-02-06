@@ -1,63 +1,36 @@
 using UnityEngine;
-using LucidFactory.Cards.UI;
-using LucidFactory.Cards.UI.Hand;
-using System.Collections.Generic;
-using LucidFactory.Cards.UI.Interfaces;
 using System;
 using LTX.ChanneledProperties;
+using System.Collections.Generic;
 
 namespace CorpsHumain.Core
 {
-    public class DefenceCardHandUI : HandUI<DefenceCard, DefenceCardHand>
+    public class DefenceCardHandUI : MonoBehaviour
     {
         [Space]
         [SerializeField]
-        private GameObject prefab;
+        private DefenceCardUI prefab;
 
-        /*
-        [SerializeField]
-        DefenceCardHandUI handUI;
-        [SerializeField]
-        Player player;
+        private Dictionary<DefenceCard, DefenceCardUI> cards = new();
 
-        private void Awake()
+        public void Bind(DefenceCardHand hand)
         {
-            handUI.Bind(player.cardHand);
-
-        }
-        */
-
-        protected override void OnBind(DefenceCardHand playerCardCollection)
-        {
-
+            hand.onCardAdded += Hand_onCardAdded;
+            hand.onCardRemoved += Hand_onCardRemoved;
         }
 
-        protected override void OnUnbind(DefenceCardHand playerCardCollection)
+        private void Hand_onCardAdded(DefenceCard card)
         {
-
+            DefenceCardUI instance = GameObject.Instantiate(prefab, transform);
+            instance.SetData(card);
+            cards.Add(card, instance);
         }
 
-        protected override bool TryCreateCardUIForCard(DefenceCard card, out ICardUI<DefenceCard> createdCard)
+        private void Hand_onCardRemoved(DefenceCard card)
         {
-
-            GameObject instance = Instantiate(prefab, transform);
-
-            if (instance.TryGetComponent(out DefenceCardUI cardUI))
-            {
-                createdCard = cardUI;
-                
-                createdCard.StateProperty.AddPriority(this, PriorityTags.Smallest, createdCard.CardStateCollection.IdleState);
-
-                return true;
-            }
-
-            createdCard = null;
-            return false;
+            Destroy(cards[card]);
+            cards.Remove(card);
         }
 
-        public override IEnumerable<ICardDropSlot> GetSlots(ICardUI cardUI)
-        {
-            return Array.Empty<ICardDropSlot>();
-        }
     }
 }

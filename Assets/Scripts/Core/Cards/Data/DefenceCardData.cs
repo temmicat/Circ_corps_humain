@@ -18,16 +18,9 @@ namespace CorpsHumain.Core
         [SerializeField]
         private Sprite icon;
         
-        public enum cards
-        {
-            Depistage, Soleil, GazRadon,
-            AlimentationSaine, Vaccination,
-            Consignes, Fumer, TabagismePassif,
-            Poids, ActifPhysiquement, Allaiter,
-            Alcool
-        }
+        
 
-        public cards thisCard;
+        public CardType thisCard;
 
 
         public string Title => title;

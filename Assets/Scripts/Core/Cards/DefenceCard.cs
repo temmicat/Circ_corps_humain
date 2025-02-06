@@ -1,12 +1,12 @@
 using UnityEngine;
-using LucidFactory.Cards;
 
 namespace CorpsHumain.Core
 {
-    public class DefenceCard : ICard
+    public class DefenceCard
     {
         public DefenceCardData Data { get; }
 
+        public bool isPlayerCard;
         public DefenceCard(DefenceCardData data)
         {
             Data = data;
