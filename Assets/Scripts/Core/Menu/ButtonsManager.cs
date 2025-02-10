@@ -137,5 +137,19 @@ namespace CorpsHumain.Core
             SceneManager.LoadScene(0);
         }
         #endregion GamePanel
+
+        #region ResultPanel
+        public void CloseResultPanel()
+        {
+            ResultPanel.SetActive(false);
+            selectionPanel.SetActive(true);
+        }
+
+        public void SaveAsPDF()
+        {
+            return;
+        }
+
+        #endregion ResultPanel
     }
 }
